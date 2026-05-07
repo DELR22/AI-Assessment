@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generative AI · Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;0,900;1,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #111110;
+    --crimson: #8B1A1A;
+    --crimson-light: #f5e8e8;
+    --white: #FAFAF8;
+    --gray-bg: #F3F2EF;
+    --gray-border: #D8D6D0;
+    --gray-mid: #A09D96;
+    --gray-text: #5C5A54;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND DECORATION ── */
+  .bg-deco {
+    position: fixed;
+    top: -120px;
+    right: -140px;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,26,26,0.08);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-deco::before {
+    content: '';
+    position: absolute;
+    inset: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,26,26,0.06);
+  }
+  .bg-deco::after {
+    content: '';
+    position: absolute;
+    inset: 90px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,26,26,0.04);
+  }
+  .bg-deco-bottom {
+    position: fixed;
+    bottom: -160px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,26,26,0.05);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 28px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 52px 0 36px;
+    border-bottom: 1px solid var(--gray-border);
+    margin-bottom: 44px;
+  }
+  .studio-label {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 20px;
+  }
+  .studio-label span {
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background: var(--crimson);
+    vertical-align: middle;
+    margin: 0 8px;
+    opacity: 0.6;
+  }
+  .headline {
+    line-height: 1;
+    margin-bottom: 18px;
+  }
+  .headline-top {
+    display: block;
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: clamp(52px, 10vw, 80px);
+    color: var(--black);
+    letter-spacing: -0.03em;
+  }
+  .headline-bottom {
+    display: block;
+    font-family: var(--sans);
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(52px, 10vw, 80px);
+    color: var(--crimson);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+  .sub {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--gray-text);
+    line-height: 1.65;
+    max-width: 440px;
+  }
+  .sub strong { font-weight: 500; color: var(--black); }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 44px;
+  }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .dot-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gray-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-mid);
+    background: var(--white);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  .dot-circle.active {
+    border-color: var(--crimson);
+    color: var(--white);
+    background: var(--crimson);
+  }
+  .dot-circle.done {
+    border-color: var(--crimson);
+    color: var(--crimson);
+    background: var(--crimson-light);
+  }
+  .dot-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    transition: color 0.3s ease;
+    white-space: nowrap;
+  }
+  .dot-label.active { color: var(--black); }
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--gray-border);
+    margin: 0 14px;
+    min-width: 20px;
+  }
+  .step-line.done { background: var(--crimson); opacity: 0.3; }
+
+  /* ── SECTIONS ── */
+  .section { display: none; animation: fadeIn 0.35s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: var(--sans);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 28px;
+    line-height: 1.2;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field { margin-bottom: 26px; }
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gray-text);
+    margin-bottom: 8px;
+  }
+  .field-hint {
+    font-size: 12px;
+    color: var(--gray-mid);
+    margin-top: 5px;
+    font-style: italic;
+  }
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--black);
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--crimson);
+  }
+  textarea { resize: vertical; line-height: 1.6; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A09D96' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+
+  /* ── CHECKBOX GROUP ── */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 13px;
+    color: var(--gray-text);
+    line-height: 1.4;
+  }
+  .check-item:hover { border-color: var(--gray-mid); background: var(--gray-bg); }
+  .check-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    accent-color: var(--crimson);
+    cursor: pointer;
+  }
+  .check-item.checked {
+    border-color: var(--crimson);
+    background: var(--crimson-light);
+    color: var(--black);
+  }
+  .risk-cat-label {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    padding: 14px 0 6px;
+    border-bottom: 1px solid var(--gray-border);
+    margin-bottom: 2px;
+  }
+  .risk-cat-label:first-child { padding-top: 2px; }
+
+  /* ── SLIDERS ── */
+  .slider-wrap {
+    margin-top: 8px;
+  }
+  .slider-track {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  input[type="range"] {
+    flex: 1;
+    height: 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--gray-border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--crimson);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 1.5px var(--crimson);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--crimson);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 1.5px var(--crimson);
+    cursor: pointer;
+  }
+  .slider-value {
+    min-width: 42px;
+    text-align: right;
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--crimson);
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    margin-top: 5px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--crimson-light);
+    border-left: 3px solid var(--crimson);
+    border-radius: 0 4px 4px 0;
+    padding: 16px 18px;
+    margin: 28px 0;
+  }
+  .callout-icon {
+    font-size: 18px;
+    color: var(--crimson);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .callout-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--black);
+  }
+  .callout-text strong { font-weight: 500; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--gray-border);
+    margin: 32px 0;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    border-radius: 3px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--crimson);
+    color: var(--white);
+    border-color: var(--crimson);
+  }
+  .btn-primary:hover { background: #6e1515; border-color: #6e1515; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-text);
+    border-color: var(--gray-border);
+  }
+  .btn-ghost:hover { border-color: var(--gray-mid); color: var(--black); background: var(--gray-bg); }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+  /* ── VALIDATION ERROR ── */
+  .field-error {
+    font-size: 12px;
+    color: var(--crimson);
+    margin-top: 5px;
+    display: none;
+    font-style: italic;
+  }
+  .field-error.visible { display: block; }
+  input.invalid, textarea.invalid, select.invalid { border-color: var(--crimson) !important; }
+
+  /* ── RESULT ── */
+  .result-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .score-block {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .score-number {
+    font-family: var(--sans);
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--crimson);
+  }
+  .score-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    margin-top: 4px;
+  }
+  .verdict-box {
+    border-left: 3px solid var(--crimson);
+    padding: 14px 18px;
+    background: var(--gray-bg);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 32px;
+  }
+  .verdict-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .verdict-text {
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1.35;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 520px) { .result-grid { grid-template-columns: 1fr; } }
+  .result-block {
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .result-block-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .result-block-value {
+    font-size: 14px;
+    color: var(--black);
+    line-height: 1.55;
+  }
+  .result-block-full {
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--gray-bg);
+    color: var(--gray-text);
+    border: 1px solid var(--gray-border);
+  }
+  .tag.risk { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  .tag.reward { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+  .score-breakdown {
+    font-size: 12px;
+    color: var(--gray-text);
+    margin-top: 6px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-deco"></div>
+<div class="bg-deco-bottom"></div>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <header>
+    <p class="studio-label">AI Evaluation Framework <span></span> Concept Workshop</p>
+    <h1 class="headline">
+      <span class="headline-top">Generative AI</span>
+      <span class="headline-bottom">Assessment</span>
+    </h1>
+    <p class="sub">Three focused steps to move from <strong>tool selection</strong> to a fully articulated <strong>risk-reward verdict</strong>.</p>
+  </header>
+
+  <!-- PROGRESS -->
+  <nav class="progress-bar" id="progressBar" aria-label="Form progress">
+    <div class="step-dot">
+      <div class="dot-circle active" id="dot1">1</div>
+      <span class="dot-label active" id="lbl1">Selection</span>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-dot">
+      <div class="dot-circle" id="dot2">2</div>
+      <span class="dot-label" id="lbl2">Risk &amp; Reward</span>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-dot">
+      <div class="dot-circle" id="dot3">3</div>
+      <span class="dot-label" id="lbl3">Results</span>
+    </div>
+  </nav>
+
+  <!-- STEP 1 -->
+  <div class="section active" id="step1">
+    <p class="section-eyebrow">Step 1 of 3</p>
+    <h2 class="section-title">Define Your Tool &amp; Initial Expectations</h2>
+
+    <div class="field">
+      <label class="field-label" for="aiTool">Name the AI tool you are evaluating</label>
+      <input type="text" id="aiTool" placeholder="Type a tool name…">
+      <p class="field-hint">Or select from the curated list below — the text field takes priority if both are filled.</p>
+    </div>
+
+    <div class="field-row" style="margin-bottom:0">
+      <div class="field">
+        <label class="field-label" for="filterCategory">Filter by Category</label>
+        <select id="filterCategory" onchange="filterTools()">
+          <option value="">All Categories</option>
+          <option value="LLM">Large Language Models</option>
+          <option value="Image">Image Generation</option>
+          <option value="Video">Video Generation</option>
+          <option value="Music">Music Generation</option>
+          <option value="TTS">Voice &amp; Text-to-Speech</option>
+          <option value="Coding">Coding Assistants</option>
+          <option value="Agents">AI Agents &amp; Research</option>
+          <option value="ThreeD">3D Generation</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="filterType">Filter by Type</label>
+        <select id="filterType" onchange="filterTools()">
+          <option value="">All Types</option>
+          <option value="commercial">Commercial</option>
+          <option value="open-source">Open Source</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="topAITool">Select from current top AI tools</label>
+      <select id="topAITool">
+        <option value="" disabled selected>Choose a tool…</option>
+        <optgroup label="Large Language Models">
+          <option data-category="LLM" data-type="commercial" value="GPT-5.5 / GPT-5 / GPT-4o">GPT-5.5 / GPT-5 / GPT-4o [C]</option>
+          <option data-category="LLM" data-type="commercial" value="o3 / o4-mini">o3 / o4-mini [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Claude Opus 4.6 / Sonnet 4.6">Claude Opus 4.6 / Sonnet 4.6 [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Gemini 3.1 Pro / Flash">Gemini 3.1 Pro / Flash [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Grok 4">Grok 4 [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Mistral 3 / Magistral">Mistral 3 / Magistral [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Perplexity Comet">Perplexity Comet [C]</option>
+          <option data-category="LLM" data-type="commercial" value="Microsoft Copilot 365">Microsoft Copilot 365 [C]</option>
+          <option data-category="LLM" data-type="open-source" value="Llama 4 Scout / Maverick">Llama 4 Scout / Maverick [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="DeepSeek V4 Pro / R1">DeepSeek V4 Pro / R1 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Qwen 3.5 / Qwen 3.5 Max">Qwen 3.5 / Qwen 3.5 Max [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Gemma 4">Gemma 4 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Phi-4">Phi-4 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Mistral Large 3">Mistral Large 3 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Kimi K2.6">Kimi K2.6 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="NVIDIA Nemotron Ultra 253B">NVIDIA Nemotron Ultra 253B [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="GPT-OSS 120B / 20B">GPT-OSS 120B / 20B [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Falcon 3">Falcon 3 [OS]</option>
+          <option data-category="LLM" data-type="open-source" value="Command R+">Command R+ [OS]</option>
+        </optgroup>
+        <optgroup label="Image Generation">
+          <option data-category="Image" data-type="commercial" value="Midjourney v8.1">Midjourney v8.1 [C]</option>
+          <option data-category="Image" data-type="commercial" value="Flux 1.1 Pro Ultra">Flux 1.1 Pro Ultra [C]</option>
+          <option data-category="Image" data-type="commercial" value="Google Imagen 3 / Nano Banana">Google Imagen 3 / Nano Banana [C]</option>
+          <option data-category="Image" data-type="commercial" value="GPT-Image-2">GPT-Image-2 [C]</option>
+          <option data-category="Image" data-type="commercial" value="DALL-E 3">DALL-E 3 [C]</option>
+          <option data-category="Image" data-type="commercial" value="Adobe Firefly">Adobe Firefly [C]</option>
+          <option data-category="Image" data-type="commercial" value="Ideogram v2">Ideogram v2 [C]</option>
+          <option data-category="Image" data-type="commercial" value="Recraft v3">Recraft v3 [C]</option>
+          <option data-category="Image" data-type="commercial" value="LeonardoAI">LeonardoAI [C]</option>
+          <option data-category="Image" data-type="commercial" value="Canva Magic Media">Canva Magic Media [C]</option>
+          <option data-category="Image" data-type="open-source" value="Stable Diffusion 3.5">Stable Diffusion 3.5 [OS]</option>
+          <option data-category="Image" data-type="open-source" value="Flux (open weights)">Flux (open weights) [OS]</option>
+          <option data-category="Image" data-type="open-source" value="Invoke AI">Invoke AI [OS]</option>
+        </optgroup>
+        <optgroup label="Video Generation">
+          <option data-category="Video" data-type="commercial" value="Veo 3.1">Veo 3.1 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Kling 3.0">Kling 3.0 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Sora 2">Sora 2 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Runway Gen-4.5">Runway Gen-4.5 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Seedance 2">Seedance 2 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Luma Ray3">Luma Ray3 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Pika 2.5">Pika 2.5 [C]</option>
+          <option data-category="Video" data-type="commercial" value="Adobe Firefly Video">Adobe Firefly Video [C]</option>
+          <option data-category="Video" data-type="commercial" value="HeyGen Avatar V">HeyGen Avatar V [C]</option>
+          <option data-category="Video" data-type="commercial" value="Synthesia">Synthesia [C]</option>
+          <option data-category="Video" data-type="open-source" value="Wan 2.6">Wan 2.6 [OS]</option>
+        </optgroup>
+        <optgroup label="Music Generation">
+          <option data-category="Music" data-type="commercial" value="Suno V5">Suno V5 [C]</option>
+          <option data-category="Music" data-type="commercial" value="Udio">Udio [C]</option>
+          <option data-category="Music" data-type="commercial" value="ElevenLabs Eleven Music">ElevenLabs Eleven Music [C]</option>
+          <option data-category="Music" data-type="commercial" value="Google Lyria 3">Google Lyria 3 [C]</option>
+          <option data-category="Music" data-type="commercial" value="AIVA">AIVA [C]</option>
+          <option data-category="Music" data-type="commercial" value="Soundraw">Soundraw [C]</option>
+          <option data-category="Music" data-type="commercial" value="Boomy">Boomy [C]</option>
+          <option data-category="Music" data-type="open-source" value="Stable Audio">Stable Audio [OS]</option>
+        </optgroup>
+        <optgroup label="Voice &amp; Text-to-Speech">
+          <option data-category="TTS" data-type="commercial" value="ElevenLabs">ElevenLabs [C]</option>
+          <option data-category="TTS" data-type="commercial" value="Murf AI">Murf AI [C]</option>
+          <option data-category="TTS" data-type="commercial" value="Resemble AI">Resemble AI [C]</option>
+          <option data-category="TTS" data-type="commercial" value="WellSaid Labs">WellSaid Labs [C]</option>
+          <option data-category="TTS" data-type="commercial" value="Descript">Descript [C]</option>
+          <option data-category="TTS" data-type="commercial" value="OpenAI TTS">OpenAI TTS [C]</option>
+          <option data-category="TTS" data-type="commercial" value="Cartesia">Cartesia [C]</option>
+          <option data-category="TTS" data-type="commercial" value="AssemblyAI">AssemblyAI [C]</option>
+          <option data-category="TTS" data-type="commercial" value="Deepgram">Deepgram [C]</option>
+          <option data-category="TTS" data-type="open-source" value="Coqui TTS">Coqui TTS [OS]</option>
+          <option data-category="TTS" data-type="open-source" value="Kokoro TTS">Kokoro TTS [OS]</option>
+          <option data-category="TTS" data-type="open-source" value="Whisper (OpenAI)">Whisper (OpenAI) [OS]</option>
+        </optgroup>
+        <optgroup label="Coding Assistants">
+          <option data-category="Coding" data-type="commercial" value="GitHub Copilot">GitHub Copilot [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Cursor">Cursor [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Claude Code">Claude Code [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Windsurf">Windsurf [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Lovable">Lovable [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Bolt">Bolt [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Replit Agent">Replit Agent [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Google Gemini Code Assist">Google Gemini Code Assist [C]</option>
+          <option data-category="Coding" data-type="commercial" value="Amazon Q Developer">Amazon Q Developer [C]</option>
+          <option data-category="Coding" data-type="open-source" value="Continue">Continue [OS]</option>
+          <option data-category="Coding" data-type="open-source" value="Aider">Aider [OS]</option>
+          <option data-category="Coding" data-type="open-source" value="Tabby">Tabby [OS]</option>
+        </optgroup>
+        <optgroup label="AI Agents &amp; Research">
+          <option data-category="Agents" data-type="commercial" value="Manus">Manus [C]</option>
+          <option data-category="Agents" data-type="commercial" value="Genspark">Genspark [C]</option>
+          <option data-category="Agents" data-type="commercial" value="Perplexity Comet">Perplexity Comet [C]</option>
+          <option data-category="Agents" data-type="commercial" value="NotebookLM">NotebookLM [C]</option>
+          <option data-category="Agents" data-type="open-source" value="OpenClaw">OpenClaw [OS*]</option>
+        </optgroup>
+        <optgroup label="3D Generation">
+          <option data-category="ThreeD" data-type="commercial" value="Tripo H3.1">Tripo H3.1 [C]</option>
+          <option data-category="ThreeD" data-type="commercial" value="Luma AI">Luma AI [C]</option>
+          <option data-category="ThreeD" data-type="commercial" value="CSM.ai">CSM.ai [C]</option>
+          <option data-category="ThreeD" data-type="commercial" value="Spline AI">Spline AI [C]</option>
+          <option data-category="ThreeD" data-type="open-source" value="TripoSR">TripoSR [OS]</option>
+        </optgroup>
+      </select>
+      <p class="field-hint">[C] = Commercial &nbsp;·&nbsp; [OS] = Open Source &nbsp;·&nbsp; Use the filters above to narrow by category or type.</p>
+    </div>
+
+    <div class="field" id="capabilitiesField">
+      <label class="field-label">Select the tool's capabilities</label>
+      <div class="check-grid" id="capabilitiesGrid" style="margin-top:8px;">
+        <p style="font-size:13px;color:var(--gray-mid);font-style:italic;grid-column:1/-1;">← Choose a tool above to populate capabilities</p>
+      </div>
+      <p class="field-hint">Select all that apply to your intended use.</p>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="additionalCapabilities">Additional capabilities (from your own research)</label>
+      <textarea id="additionalCapabilities" rows="2" placeholder="Any features or capabilities not listed above…"></textarea>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <label class="field-label" for="vision">Your vision for this tool</label>
+      <textarea id="vision" rows="3" placeholder="What outcomes do you hope to achieve? What problem does this solve for you?"></textarea>
+      <div class="field-error" id="vision-err">Please describe your vision before continuing.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="workflow">Workflow integration</label>
+      <textarea id="workflow" rows="3" placeholder="How do you expect this tool to fit into your existing process? (e.g., brainstorming, content drafting, code review…)" required></textarea>
+      <div class="field-error" id="workflow-err">Please describe the workflow integration before continuing.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goToStep(2)">
+        Next: Assess Risks &amp; Rewards
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="section" id="step2">
+    <p class="section-eyebrow">Step 2 of 3</p>
+    <h2 class="section-title">Evaluate Risks &amp; Define Expected Rewards</h2>
+
+    <div class="field">
+      <label class="field-label">Potential risks associated with this tool</label>
+      <p class="field-hint" style="margin-bottom:10px;">Your selections will influence the final assessment score.</p>
+      <div class="check-grid" id="riskGrid">
+
+        <div class="risk-cat-label">Privacy &amp; Data</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="The tool may store what you type"> The tool may store what you type</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Your conversations could be used to train future models"> Your conversations could be used to train future models</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Personal details you share may not stay private"> Personal details you share may not stay private</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Your data may be shared with other companies"> Your data may be shared with other companies</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Files you upload may be kept on external servers"> Files you upload may be kept on external servers</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="You may not know where your data is stored"> You may not know where your data is stored</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The tool may build a profile about you over time"> The tool may build a profile about you over time</label>
+
+        <div class="risk-cat-label">Intellectual Property</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="Content it generates may accidentally copy someone else's work"> Content it generates may accidentally copy someone else's work</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It was trained on material that may not have been properly licensed"> It was trained on material that may not have been properly licensed</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It is often unclear who owns what the tool creates"> It is often unclear who owns what the tool creates</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can mimic an artist's style without their permission"> It can mimic an artist's style without their permission</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="What it produces could unknowingly violate existing patents"> What it produces could unknowingly violate existing patents</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can generate text that looks like plagiarism"> It can generate text that looks like plagiarism</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="You may not be legally protected if someone claims your output infringes their work"> You may not be legally protected if someone claims your output infringes their work</label>
+
+        <div class="risk-cat-label">Security</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="Clever prompts can trick the tool into doing things it shouldn't"> Clever prompts can trick the tool into doing things it shouldn't</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Bad actors can find ways to bypass its safety rules"> Bad actors can find ways to bypass its safety rules</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Someone can feed it misleading information to manipulate its output"> Someone can feed it misleading information to manipulate its output</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Your access keys or passwords could be accidentally exposed"> Your access keys or passwords could be accidentally exposed</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can be used to create fake videos or audio to deceive people"> It can be used to create fake videos or audio to deceive people</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It could be used to steal login credentials"> It could be used to steal login credentials</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Malicious code or content could be hidden inside AI-generated material"> Malicious code or content could be hidden inside AI-generated material</label>
+
+        <div class="risk-cat-label">Ethics &amp; Bias</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can produce content that is unfair to certain racial groups"> It can produce content that is unfair to certain racial groups</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can reinforce gender stereotypes"> It can reinforce gender stereotypes</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It may be insensitive to certain cultures or communities"> It may be insensitive to certain cultures or communities</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can generate content that discriminates against people"> It can generate content that discriminates against people</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It may underrepresent or ignore certain groups entirely"> It may underrepresent or ignore certain groups entirely</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can make existing social biases worse without anyone noticing"> It can make existing social biases worse without anyone noticing</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="People with less economic privilege may be portrayed negatively"> People with less economic privilege may be portrayed negatively</label>
+
+        <div class="risk-cat-label">Misinformation &amp; Trust</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can confidently state things that are completely false"> It can confidently state things that are completely false</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can invent fake sources, quotes, or references that look real"> It can invent fake sources, quotes, or references that look real</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can be used to create convincing fake videos and audio"> It can be used to create convincing fake videos and audio</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="False information it generates can spread quickly online"> False information it generates can spread quickly online</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Synthetic content it creates can be used to deceive people"> Synthetic content it creates can be used to deceive people</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can misrepresent historical events"> It can misrepresent historical events</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="People may stop trusting real information because AI fakes look so convincing"> People may stop trusting real information because AI fakes look so convincing</label>
+
+        <div class="risk-cat-label">Legal &amp; Regulatory</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="Using it may accidentally break privacy laws like GDPR"> Using it may accidentally break privacy laws like GDPR</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="In some countries new AI laws may make certain uses illegal"> In some countries new AI laws may make certain uses illegal</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The rules around AI are still being written so the legal ground shifts often"> The rules around AI are still being written so the legal ground shifts often</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="If something goes wrong it can be hard to work out who is responsible"> If something goes wrong it can be hard to work out who is responsible</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="You may unknowingly break the tool's own terms of use"> You may unknowingly break the tool's own terms of use</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Different countries have different laws so global use gets complicated"> Different countries have different laws so global use gets complicated</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="There may be no clear record of what the tool did or decided"> There may be no clear record of what the tool did or decided</label>
+
+        <div class="risk-cat-label">Workforce &amp; Society</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="Some jobs may disappear because AI can do them faster and cheaper"> Some jobs may disappear because AI can do them faster and cheaper</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="People may stop developing skills they no longer feel they need"> People may stop developing skills they no longer feel they need</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Creative work may feel less valuable when AI can do it instantly"> Creative work may feel less valuable when AI can do it instantly</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Humans may be taken out of important decisions they should be making"> Humans may be taken out of important decisions they should be making</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Wages in some industries may drop as AI replaces human labor"> Wages in some industries may drop as AI replaces human labor</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Entire job markets could shift faster than people can adapt"> Entire job markets could shift faster than people can adapt</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Freelancers and independent workers may find it harder to compete"> Freelancers and independent workers may find it harder to compete</label>
+
+        <div class="risk-cat-label">Over-Reliance &amp; Quality</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="People may stop thinking critically and just accept what the tool says"> People may stop thinking critically and just accept what the tool says</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Users may trust the output without checking if it is actually correct"> Users may trust the output without checking if it is actually correct</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Important errors may go unnoticed because no one verifies the work"> Important errors may go unnoticed because no one verifies the work</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="People may use it as a substitute for real professional expertise"> People may use it as a substitute for real professional expertise</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Important decisions may be handed over to a tool that can be wrong"> Important decisions may be handed over to a tool that can be wrong</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Quality checks may be skipped because the output looks polished"> Quality checks may be skipped because the output looks polished</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Professional skills and judgment may slowly weaken from lack of use"> Professional skills and judgment may slowly weaken from lack of use</label>
+
+        <div class="risk-cat-label">Environmental</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="Running these tools uses enormous amounts of electricity"> Running these tools uses enormous amounts of electricity</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The energy consumed contributes to carbon emissions"> The energy consumed contributes to carbon emissions</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The computers that power AI need large amounts of water to stay cool"> The computers that power AI need large amounts of water to stay cool</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Building and running AI requires significant natural resources"> Building and running AI requires significant natural resources</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Old AI hardware creates electronic waste when replaced"> Old AI hardware creates electronic waste when replaced</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Much of the electricity used still comes from fossil fuels"> Much of the electricity used still comes from fossil fuels</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="More and more large data centers are being built to meet demand"> More and more large data centers are being built to meet demand</label>
+
+        <div class="risk-cat-label">Commercial &amp; Vendor</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="You may become heavily dependent on one company's tool"> You may become heavily dependent on one company's tool</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Prices can change at any time with little warning"> Prices can change at any time with little warning</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The version you rely on may be shut down or replaced"> The version you rely on may be shut down or replaced</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Your entire workflow could break if the tool's service goes down"> Your entire workflow could break if the tool's service goes down</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="You may have no easy way to switch to a different provider"> You may have no easy way to switch to a different provider</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Features you depend on can be removed without notice"> Features you depend on can be removed without notice</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Putting all your trust in one provider is a significant business risk"> Putting all your trust in one provider is a significant business risk</label>
+
+        <div class="risk-cat-label">Transparency &amp; Accountability</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="You often cannot see how the tool reached its answer"> You often cannot see how the tool reached its answer</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can be impossible to explain why it said what it said"> It can be impossible to explain why it said what it said</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="There is often no way to fully audit what the tool did"> There is often no way to fully audit what the tool did</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The tool's behavior can quietly change over time without warning"> The tool's behavior can quietly change over time without warning</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Performance claims may not reflect real-world use"> Performance claims may not reflect real-world use</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Updates can change how the tool behaves in ways you don't expect"> Updates can change how the tool behaves in ways you don't expect</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Getting the same result twice from the same input is not always guaranteed"> Getting the same result twice from the same input is not always guaranteed</label>
+
+        <div class="risk-cat-label">Creative &amp; Cultural</div>
+        <label class="check-item"><input type="checkbox" name="risk" value="AI-generated content can start to look and sound the same everywhere"> AI-generated content can start to look and sound the same everywhere</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="It can use elements of a culture in ways that are disrespectful or superficial"> It can use elements of a culture in ways that are disrespectful or superficial</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Individual creative voices can get lost when everyone uses the same tool"> Individual creative voices can get lost when everyone uses the same tool</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="True originality becomes harder to achieve and recognize"> True originality becomes harder to achieve and recognize</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="Visual and musical styles may slowly blend into one generic aesthetic"> Visual and musical styles may slowly blend into one generic aesthetic</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The stories and art of minority cultures may be misrepresented"> The stories and art of minority cultures may be misrepresented</label>
+        <label class="check-item"><input type="checkbox" name="risk" value="The way history and culture are portrayed can be subtly distorted"> The way history and culture are portrayed can be subtly distorted</label>
+
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="additionalRisks">Additional risks (from your research)</label>
+      <textarea id="additionalRisks" rows="2" placeholder="Any risks specific to your context or industry…"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="riskToleranceSlider">How much do you care about taking these risks when using a GenAI tool?</label>
+      <div class="slider-wrap">
+        <div class="slider-track">
+          <input type="range" id="riskToleranceSlider" min="0" max="100" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value">
+          <span class="slider-value">50</span>
+        </div>
+        <div class="slider-labels"><span>Don't care at all</span><span>Most important thing for me</span></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <label class="field-label">Expected benefits from adopting this tool</label>
+      <p class="field-hint" style="margin-bottom:10px;">Benefits shown are matched to the tool and type you selected in Step 1. Your selections will positively influence the final assessment score.</p>
+      <div class="check-grid" id="rewardGrid">
+        <p style="font-size:13px;color:var(--gray-mid);font-style:italic;grid-column:1/-1;">← Select a tool in Step 1 to see relevant benefits</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="rewardText">Additional expected benefits not included in the choices above</label>
+      <input type="text" id="rewardText" placeholder="Any benefits not listed above…">
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="benefitsOutweighRisksSlider">How much do the benefits outweigh the risks?</label>
+      <div class="slider-wrap">
+        <div class="slider-track">
+          <input type="range" id="benefitsOutweighRisksSlider" min="0" max="100" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value">
+          <span class="slider-value">50</span>
+        </div>
+        <div class="slider-labels"><span>It's not worth the risk</span><span>I will use it without hesitation</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-icon">↗</div>
+      <p class="callout-text"><strong>Pause and experiment.</strong> Before advancing to Step 3, take time to actively use the selected AI tool. Generate sample outputs, probe its capabilities, and test it against your stated vision. Your hands-on experience will ground the final assessment.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStep(1)">
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><path d="M12 7H2M6 3L2 7l4 4"/></svg>
+        Go Back
+      </button>
+      <button class="btn btn-primary" onclick="submitAssessment()">
+        Generate Assessment
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="section" id="resultSection">
+    <p class="section-eyebrow">Assessment Complete</p>
+    <h2 class="section-title">Summary &amp; Insights</h2>
+
+    <div class="field">
+      <label class="field-label" for="expectedDeliverySlider">How well did the tool deliver your expected results?</label>
+      <div class="slider-wrap">
+        <div class="slider-track">
+          <input type="range" id="expectedDeliverySlider" min="0" max="100" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value; updateScore()">
+          <span class="slider-value">50</span>
+        </div>
+        <div class="slider-labels"><span>Did not meet expectations</span><span>Fully exceeded expectations</span></div>
+      </div>
+    </div>
+
+    <div id="resultDisplay"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStep(2)">
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><path d="M12 7H2M6 3L2 7l4 4"/></svg>
+        Revise
+      </button>
+      <button class="btn btn-ghost" onclick="window.print()">
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><rect x="2" y="4" width="10" height="7" rx="1"/><path d="M4 4V2h6v2M4 11v1h6v-1"/></svg>
+        Print / Export PDF
+      </button>
+      <button class="btn btn-ghost" onclick="location.reload()">
+        <svg viewBox="0 0 14 14" stroke-width="1.8"><path d="M12 4A5.5 5.5 0 1 0 12 10"/><path d="M12 1v3H9"/></svg>
+        Start Over
+      </button>
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+  const capabilitiesMap = {
+    LLM: [
+      'Text generation & drafting','Summarization & compression','Translation & localization',
+      'Sentiment analysis','Conversational dialogue','Multi-step reasoning',
+      'Mathematical problem solving','Code generation & debugging','Document analysis & extraction',
+      'Question answering','Long-context processing','Instruction following',
+      'Multimodal input (text + image)','RAG & knowledge retrieval','Agent task execution',
+      'Fine-tuning & customization (open source)','API & workflow integration',
+      'Multi-language support','Research & literature synthesis','Data classification & labeling'
+    ],
+    Image: [
+      'Text-to-image generation','Image-to-image transformation','Style transfer & artistic rendering',
+      'Photorealistic output','Concept visualization','Character design',
+      'Product mockup creation','Background generation & removal','Inpainting & outpainting',
+      'Upscaling & enhancement','Brand asset creation','Logo & vector generation',
+      'Sketch-to-image rendering','Batch image generation','Custom model fine-tuning (open source)',
+      'LoRA & checkpoint training (open source)','Multi-style consistency','Text rendering in images',
+      'Reference image matching','IP-safe commercial output'
+    ],
+    Video: [
+      'Text-to-video generation','Image-to-video animation','Scene & environment synthesis',
+      'Camera motion control','Multi-shot storytelling','Native audio generation',
+      'Dialogue & lip-sync','Sound effect synthesis','4K & HD output',
+      'Video-to-video style transfer','Motion brush & selective animation',
+      'Character consistency across shots','Cinematic physics simulation',
+      'Avatar-driven presentation','Multi-language video localization',
+      'Short-form social content','Long-form narrative video','Video extension & continuation',
+      'Self-hosted inference (open source)','Commercial licensing output'
+    ],
+    Music: [
+      'Full song generation','Instrumental composition','Genre-specific creation',
+      'Lyric generation','Vocal synthesis','Voice cloning for music',
+      'Stem separation','MIDI export','Style & mood matching',
+      'Reference track imitation','Multi-language vocal output','Royalty-free track output',
+      'DAW integration','Real-time audio streaming','Soundtrack generation',
+      'Background music creation','Song structure editing','Inpainting specific sections',
+      'Commercial licensing','API access for developers'
+    ],
+    TTS: [
+      'Natural voice synthesis','Voice cloning','Emotion & tone control',
+      'Multi-language TTS','Real-time low-latency synthesis','Audiobook narration',
+      'Podcast & content voiceover','Multilingual dubbing & lip-sync','Custom voice creation',
+      'Speaker diarization','Speech-to-text transcription','Noise reduction & cleanup',
+      'Audio overdub editing','Accent customization','Streaming audio output',
+      'API & SDK integration','On-premise deployment (open source)','Character voice performance',
+      'Brand voice consistency','Batch audio processing'
+    ],
+    Coding: [
+      'Code completion & autocomplete','Code generation from natural language','Bug detection & fixing',
+      'Code review & refactoring','Test generation','Documentation writing',
+      'Multi-language support','Repository-aware context','Terminal & CLI agent execution',
+      'Full app generation (vibe coding)','Git-aware change tracking','Inline chat & explanation',
+      'Security vulnerability detection','Dependency management','Cloud deploy integration',
+      'IDE plugin integration','On-premise self-hosting (open source)','Multi-file project editing',
+      'API & SDK code scaffolding','Debugging with trace analysis'
+    ],
+    Agents: [
+      'Autonomous multi-step task execution','Web browsing & search','Document ingestion & synthesis',
+      'Data analysis & visualization','Spreadsheet generation & editing','Slide deck creation',
+      'Research report generation','Source citation & verification','Multi-tool orchestration',
+      'Scheduled & recurring tasks','Email & calendar management','Knowledge base Q&A',
+      'Audio overview generation','Long-horizon planning','API & connector integration',
+      'Memory & session persistence','Multi-model routing','Workflow automation',
+      'Real-time information retrieval','Collaborative multi-agent execution'
+    ],
+    ThreeD: [
+      'Text-to-3D model generation','Image-to-3D conversion','Single-image 3D reconstruction',
+      'Mesh & geometry output','Texture & material generation','Character rigging & animation',
+      'NeRF scene capture','Browser-based 3D creation','Game asset export',
+      'PBR material support','Multi-view consistency','3D environment generation',
+      'Engine-ready file export (FBX, OBJ, GLTF)','Industrial & architectural modeling',
+      'Real-time 3D interaction','Gaussian splat export','Fine-detail geometry control',
+      'Open-source self-hosting','API integration for pipelines','Style & aesthetic customization'
+    ]
+  };
+
+  const rewardsMap = {
+    LLM: {
+      commercial: [
+        'Produces highly accurate answers',
+        'Reliable and always available',
+        'Understands text, images and files',
+        'Gets better with regular updates',
+        'Protects users from harmful content',
+        'Complies with business privacy rules',
+        'Works with popular apps out of the box',
+        'Easy to scale for large teams',
+        'No servers to set up or maintain',
+        'Dedicated support when things go wrong'
+      ],
+      'open-source': [
+        'Your data never leaves your computer',
+        'No cost per use at large volumes',
+        'Teach it your own content and style',
+        'Works without an internet connection',
+        'Not tied to any single company',
+        'Anyone can inspect how it works',
+        'Full control over what it can and cannot do',
+        'Free to use for academic research'
+      ]
+    },
+    Image: {
+      commercial: [
+        'Creates beautiful images from a text description',
+        'Produces consistent and polished results',
+        'Safe to use in commercial projects',
+        'Generates images in seconds',
+        'Keeps your brand style consistent',
+        'Licensed for business and professional use',
+        'No design skills required',
+        'Gets updated with better quality regularly',
+        'Works directly inside design tools like Canva or Adobe'
+      ],
+      'open-source': [
+        'Generate unlimited images at no cost',
+        'Train it on your own visual style',
+        'No restrictions on what you can create',
+        'Works privately on your own computer',
+        'Huge library of community-built styles',
+        'No watermarks on your images',
+        'Full control over the generation process',
+        'Free even at very high volumes'
+      ]
+    },
+    Video: {
+      commercial: [
+        'Creates high-quality video from a text description',
+        'Generates realistic sound and dialogue automatically',
+        'Characters speak and lip-sync naturally',
+        'Produces cinema-quality 4K video',
+        'Translates video content into other languages',
+        'No video editing experience required',
+        'No expensive hardware needed',
+        'Continuously improving with new updates',
+        'Safe to use in paid commercial projects'
+      ],
+      'open-source': [
+        'Run video generation on your own machine',
+        'No cost no matter how many videos you make',
+        'No watermarks or platform restrictions',
+        'Full privacy — nothing sent to external servers',
+        'Adjust and customize the tool to your needs',
+        'Freedom to experiment without limits',
+        'Good for research and learning'
+      ]
+    },
+    Music: {
+      commercial: [
+        'Create a full song just by describing it',
+        'Professional-sounding vocals and instruments',
+        'Works across any musical genre',
+        'Export individual tracks to edit separately',
+        'Distribute music directly to Spotify and Apple Music',
+        'Earn royalties from your AI-generated songs',
+        'Safe for use in paid content and advertising',
+        'Supports vocals in multiple languages'
+      ],
+      'open-source': [
+        'Generate music with no per-track cost',
+        'Full ownership of everything you create',
+        'Use your own music to train a custom style',
+        'Works privately without uploading your data',
+        'No platform restrictions on how you use the music',
+        'Free to integrate into your own software or app'
+      ]
+    },
+    TTS: {
+      commercial: [
+        'Sounds like a real human voice',
+        'Clone your own voice from a short sample',
+        'Adjust the emotion and tone of the voice',
+        'Speaks naturally in 29+ languages',
+        'Delivers audio in real time with no delay',
+        'Keeps your brand voice consistent across content',
+        'Translates and lip-syncs video to other languages',
+        'Handles thousands of audio files at once',
+        'Works reliably even at high demand'
+      ],
+      'open-source': [
+        'Runs entirely on your own device',
+        'No cost per word or character generated',
+        'Your voice data never leaves your computer',
+        'Works offline without an internet connection',
+        'Freely adapt it to any accent or language',
+        'No usage limits or subscriptions',
+        'Safe for sensitive or confidential content'
+      ]
+    },
+    Coding: {
+      commercial: [
+        'Suggests code as you type in real time',
+        'Understands your entire project not just one file',
+        'Writes code from a plain English description',
+        'Spots and explains bugs automatically',
+        'Writes tests and documentation for you',
+        'Works inside your existing coding tools',
+        'Supports dozens of programming languages',
+        'Helps beginners learn by explaining code',
+        'Builds entire apps from a simple description'
+      ],
+      'open-source': [
+        'Your code never gets sent to external servers',
+        'Works with any AI model you choose',
+        'No monthly subscription cost',
+        'Works offline in secure environments',
+        'Fully customizable to your team\'s preferences',
+        'Can be trained on your company\'s own codebase',
+        'No hidden data collection or telemetry'
+      ]
+    },
+    Agents: {
+      commercial: [
+        'Handles complex multi-step tasks automatically',
+        'Browses the web and finds current information',
+        'Reads and summarizes long documents for you',
+        'Creates spreadsheets and presentations from scratch',
+        'Connects to your email, calendar and work tools',
+        'Remembers context across multiple sessions',
+        'Finds and cites sources automatically',
+        'Runs tasks on a schedule without reminders',
+        'Manages multiple tools at the same time'
+      ],
+      'open-source': [
+        'Full control over what the agent can access',
+        'Your private data never leaves your system',
+        'Connect it to any internal tool or database',
+        'No limits on how many tasks it can run',
+        'Inspect exactly how it makes decisions',
+        'Free to modify its behavior and logic',
+        'No dependency on any external service',
+        'Works in offline or restricted environments'
+      ]
+    },
+    ThreeD: {
+      commercial: [
+        'Creates detailed 3D models from a photo or text',
+        'Exports files ready to use in games or apps',
+        'Generates realistic materials and textures automatically',
+        'Characters come rigged and ready to animate',
+        'Produces accurate results for professional industries',
+        'Works through a browser with no software to install',
+        'Integrates directly into design and game tools',
+        'Safe to use in commercial products'
+      ],
+      'open-source': [
+        'Generate 3D assets at no cost',
+        'Full ownership of everything you create',
+        'No watermarks or usage restrictions',
+        'Works privately on your own machine',
+        'Free to use in any game or application',
+        'Adaptable to your specific creative pipeline',
+        'No per-asset fees at any scale',
+        'Active community sharing free models and tools'
+      ]
+    }
+  };
+
+  const topAIToolSelect = document.getElementById('topAITool');
+
+  function buildRewardGrid() {
+    const grid = document.getElementById('rewardGrid');
+    const sel = document.getElementById('topAITool');
+    const opt = sel.selectedIndex > 0 ? sel.options[sel.selectedIndex] : null;
+    const category = opt ? opt.getAttribute('data-category') : null;
+    const type = opt ? opt.getAttribute('data-type') : null;
+    grid.innerHTML = '';
+    if (!category || !rewardsMap[category]) {
+      grid.innerHTML = '<p style="font-size:13px;color:var(--gray-mid);font-style:italic;grid-column:1/-1;">← Select a tool in Step 1 to see relevant benefits</p>';
+      return;
+    }
+    const catData = rewardsMap[category];
+    const typesToShow = type ? [type] : ['commercial', 'open-source'];
+    const typeLabels = { commercial: 'Commercial', 'open-source': 'Open Source' };
+    typesToShow.forEach(t => {
+      const items = catData[t];
+      if (!items) return;
+      if (typesToShow.length > 1) {
+        const header = document.createElement('div');
+        header.className = 'risk-cat-label';
+        header.textContent = typeLabels[t];
+        grid.appendChild(header);
+      }
+      items.forEach(reward => {
+        const label = document.createElement('label');
+        label.className = 'check-item';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.name = 'reward';
+        cb.value = reward;
+        cb.addEventListener('change', function () {
+          this.closest('.check-item').classList.toggle('checked', this.checked);
+        });
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(' ' + reward));
+        grid.appendChild(label);
+      });
+    });
+  }
+
+  function filterTools() {
+    const catFilter = document.getElementById('filterCategory').value;
+    const typeFilter = document.getElementById('filterType').value;
+    topAIToolSelect.selectedIndex = 0;
+    Array.from(topAIToolSelect.querySelectorAll('option')).forEach(opt => {
+      if (!opt.getAttribute('data-category')) return;
+      const catMatch = !catFilter || opt.getAttribute('data-category') === catFilter;
+      const typeMatch = !typeFilter || opt.getAttribute('data-type') === typeFilter;
+      opt.hidden = !(catMatch && typeMatch);
+    });
+    Array.from(topAIToolSelect.querySelectorAll('optgroup')).forEach(group => {
+      group.hidden = Array.from(group.querySelectorAll('option')).every(opt => opt.hidden);
+    });
+  }
+
+  topAIToolSelect.addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const category = selectedOption.getAttribute('data-category');
+    const grid = document.getElementById('capabilitiesGrid');
+    grid.innerHTML = '';
+    if (capabilitiesMap[category]) {
+      capabilitiesMap[category].forEach(cap => {
+        const label = document.createElement('label');
+        label.className = 'check-item';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.name = 'capability';
+        cb.value = cap;
+        cb.addEventListener('change', function () {
+          this.closest('.check-item').classList.toggle('checked', this.checked);
+        });
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(' ' + cap));
+        grid.appendChild(label);
+      });
+    }
+    buildRewardGrid();
+    if (document.getElementById('aiTool').value.trim() === '') {
+      document.getElementById('aiTool').placeholder = this.value + ' (selected from list)';
+    }
+  });
+
+  // Checkbox highlight
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', function () {
+      this.closest('.check-item').classList.toggle('checked', this.checked);
+    });
+  });
+
+  // Progress state
+  function setProgress(step) {
+    [1,2,3].forEach(i => {
+      const dot = document.getElementById('dot'+i);
+      const lbl = document.getElementById('lbl'+i);
+      dot.classList.remove('active','done');
+      lbl.classList.remove('active');
+      if (i < step) { dot.classList.add('done'); dot.innerHTML = '✓'; }
+      else if (i === step) { dot.classList.add('active'); dot.textContent = i; lbl.classList.add('active'); }
+      else { dot.textContent = i; }
+    });
+    [1,2].forEach(i => {
+      const line = document.getElementById('line'+i);
+      line.classList.toggle('done', i < step);
+    });
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep(step) {
+    if (step === 2 && !validateStep1()) return;
+    if (step === 'result' || step === 4) { submitAssessment(); return; }
+    setProgress(step);
+    showSection('step' + step);
+    if (step === 2) buildRewardGrid();
+  }
+
+  function validateStep1() {
+    let valid = true;
+    const vision = document.getElementById('vision').value.trim();
+    const workflow = document.getElementById('workflow').value.trim();
+    const vErr = document.getElementById('vision-err');
+    const wErr = document.getElementById('workflow-err');
+    const vField = document.getElementById('vision');
+    const wField = document.getElementById('workflow');
+
+    if (!vision) {
+      vErr.classList.add('visible');
+      vField.classList.add('invalid');
+      valid = false;
+    } else {
+      vErr.classList.remove('visible');
+      vField.classList.remove('invalid');
+    }
+    if (!workflow) {
+      wErr.classList.add('visible');
+      wField.classList.add('invalid');
+      valid = false;
+    } else {
+      wErr.classList.remove('visible');
+      wField.classList.remove('invalid');
+    }
+    return valid;
+  }
+
+  // Stored assessment data for live score recalculation
+  let _ad = {};
+
+  const verdictMap = [
+    { min: 0,  text: 'This tool presents more risk than reward for your current context. Consider exploring alternatives before committing.' },
+    { min: 35, text: 'This tool marginally meets your criteria. Proceed with caution and establish clear monitoring checkpoints.' },
+    { min: 50, text: 'This tool is a reasonable fit, though notable limitations exist. Consider a bounded pilot before full adoption.' },
+    { min: 62, text: 'This tool performs well and aligns meaningfully with your workflow goals. Adoption is justified with standard precautions.' },
+    { min: 75, text: 'This tool is an excellent match for your stated needs. A strong recommendation to integrate into your workflow.' },
+    { min: 88, text: 'This tool exceeds expectations across all assessed dimensions. Highly recommended for immediate adoption.' }
+  ];
+
+  function updateScore() {
+    if (!('numBenefits' in _ad)) return;
+    const expectedDelivery = parseFloat(document.getElementById('expectedDeliverySlider').value);
+    const raw = ((_ad.numBenefits * (_ad.benefitsWeight + expectedDelivery)) - (_ad.numRisks * _ad.riskImportance)) / 10;
+    const displayScore = Math.max(0, Math.min(100, Math.round(raw)));
+    const verdict = verdictMap.filter(v => displayScore >= v.min).pop().text;
+    document.getElementById('finalScore').textContent = displayScore;
+    document.getElementById('finalVerdict').textContent = verdict;
+    const elA = document.getElementById('summaryExpectedDelivery');
+    if (elA) elA.textContent = expectedDelivery + ' / 100';
+  }
+
+  function submitAssessment() {
+    const toolManual = document.getElementById('aiTool').value.trim();
+    const topTool = document.getElementById('topAITool').value;
+    const chosenTool = toolManual || topTool || 'Not specified';
+    const capabilities = Array.from(document.querySelectorAll('input[name="capability"]:checked')).map(e => e.value).join(', ') || 'None selected';
+    const addCap = document.getElementById('additionalCapabilities').value.trim();
+    const vision = document.getElementById('vision').value.trim();
+    const workflow = document.getElementById('workflow').value.trim();
+
+    const selectedRisks = Array.from(document.querySelectorAll('input[name="risk"]:checked')).map(e => e.value);
+    const addRisks = document.getElementById('additionalRisks').value.trim();
+    const riskImportance = parseFloat(document.getElementById('riskToleranceSlider').value);
+
+    const selectedRewards = Array.from(document.querySelectorAll('input[name="reward"]:checked')).map(e => e.value);
+    const rewardCustom = document.getElementById('rewardText').value.trim();
+    const benefitsWeight = parseFloat(document.getElementById('benefitsOutweighRisksSlider').value);
+
+    const numBenefits = selectedRewards.length + (rewardCustom ? 1 : 0);
+    const numRisks = selectedRisks.length + (addRisks ? 1 : 0);
+
+    _ad = { numBenefits, numRisks, benefitsWeight, riskImportance };
+
+    const allRewards = [...selectedRewards, ...(rewardCustom ? [rewardCustom] : [])];
+    const riskTags = selectedRisks.map(r => `<span class="tag risk">${r}</span>`).join('') || '<span style="font-size:13px;color:var(--gray-mid)">None identified</span>';
+    const rewardTags = allRewards.map(r => `<span class="tag reward">${r}</span>`).join('') || '<span style="font-size:13px;color:var(--gray-mid)">None selected</span>';
+
+    document.getElementById('resultDisplay').innerHTML = `
+      <div class="result-header">
+        <div>
+          <div class="verdict-box">
+            <p class="verdict-label">Verdict</p>
+            <p class="verdict-text" id="finalVerdict">—</p>
+          </div>
+        </div>
+        <div class="score-block">
+          <div class="score-number" id="finalScore">—</div>
+          <div class="score-label">/ 100 Final Score</div>
+        </div>
+      </div>
+
+      <div class="result-block-full">
+        <p class="result-block-label">A · Expected Results</p>
+        <p class="result-block-value" id="summaryExpectedDelivery" style="font-weight:500;font-size:15px;">— / 100</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">B · Tool Evaluated</p>
+        <p class="result-block-value" style="font-weight:500;font-size:15px;">${chosenTool}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">C · Selected Capabilities</p>
+        <p class="result-block-value">${capabilities}${addCap ? ' · ' + addCap : ''}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">D · Your Vision</p>
+        <p class="result-block-value">${vision}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">E · Workflow Integration Plan</p>
+        <p class="result-block-value">${workflow}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">F · Number of Identified Benefits</p>
+        <p class="result-block-value" style="font-weight:500;font-size:15px;">${numBenefits}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">G · Identified Benefits</p>
+        <div class="tag-list">${rewardTags}</div>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">H · Benefit vs. Risk Perception</p>
+        <p class="result-block-value" style="font-weight:500;font-size:15px;">${benefitsWeight} / 100</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">I · Number of Identified Risks</p>
+        <p class="result-block-value" style="font-weight:500;font-size:15px;">${numRisks}</p>
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">J · Identified Risks</p>
+        <div class="tag-list">${riskTags}</div>
+        ${addRisks ? `<p style="font-size:13px;color:var(--gray-text);margin-top:8px;font-style:italic;">${addRisks}</p>` : ''}
+      </div>
+      <div class="result-block-full">
+        <p class="result-block-label">K · Risk Concern Level</p>
+        <p class="result-block-value" style="font-weight:500;font-size:15px;">${riskImportance} / 100</p>
+      </div>
+    `;
+
+    setProgress(3);
+    showSection('resultSection');
+    updateScore();
+  }
+
+  // Print styles injected
+  const printStyle = document.createElement('style');
+  printStyle.textContent = `
+    @media print {
+      .bg-deco, .bg-deco-bottom { display:none; }
+      .btn-row { display:none; }
+      #progressBar { display:none; }
+      .section { display:block !important; }
+      #step1, #step2 { display:none !important; }
+      #resultSection { display:block !important; }
+      body { background: white; }
+      .score-number { color: #8B1A1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tag.risk { background: #fef2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tag.reward { background: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+</script>
+</body>
+</html>
